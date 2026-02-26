@@ -1,0 +1,96 @@
+version: 2
+sources:
+  - name: bronze_crm
+    database: "{{ env_var('DBT_BRONZE_DB', 'BRONZE') }}"
+    schema: CRM
+    config:
+      loaded_at_field: _FIVETRAN_SYNCED
+      freshness:
+        warn_after: {count: 60, period: minute}
+        error_after: {count: 4, period: hour}
+    tables:
+      - name: CUSTOMERS
+        description: "Golden record for customer identity and profile."
+        meta:
+          fivetran_connector: "myntra_clv_crm_connector"
+          load_type: "INCREMENTAL"
+          pii_columns: ["EMAIL", "PHONE", "FIRST_NAME", "LAST_NAME"]
+        columns:
+          - name: CUSTOMER_ID
+            description: "Unique system-generated customer identifier"
+          - name: EMAIL
+            description: "Primary email address"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: CUSTOMERREGISTRATIONSOURCE
+        description: "Captures the acquisition channel and campaign attribution."
+        meta:
+          fivetran_connector: "myntra_clv_crm_connector"
+          load_type: "INCREMENTAL"
+        columns:
+          - name: REGISTRATION_SOURCE_ID
+            description: "Unique record identifier"
+          - name: CUSTOMER_ID
+            description: "Link to customer master"
+          - name: CHANNEL
+            description: "Acquisition channel"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: INCIDENTS
+        description: "Customer support tickets."
+        meta:
+          fivetran_connector: "myntra_clv_crm_connector"
+          load_type: "INCREMENTAL"
+        columns:
+          - name: INCIDENT_ID
+            description: "Unique incident ID"
+          - name: CUSTOMER_ID
+            description: "Customer"
+          - name: STATUS
+            description: "Status"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: INTERACTIONS
+        description: "Individual customer touchpoints across channels."
+        meta:
+          fivetran_connector: "myntra_clv_crm_connector"
+          load_type: "INCREMENTAL"
+        columns:
+          - name: INTERACTION_ID
+            description: "Unique interaction ID"
+          - name: CUSTOMER_ID
+            description: "Customer"
+          - name: SENTIMENT
+            description: "Detected sentiment"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: SURVEYS
+        description: "Customer feedback surveys (NPS, CSAT)."
+        meta:
+          fivetran_connector: "myntra_clv_crm_connector"
+          load_type: "INCREMENTAL"
+        columns:
+          - name: SURVEY_ID
+            description: "Unique survey ID"
+          - name: CUSTOMER_ID
+            description: "Customer"
+          - name: NPS_SCORE
+            description: "NPS (0-10)"
+          - name: CSAT_SCORE
+            description: "CSAT (1-5)"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
