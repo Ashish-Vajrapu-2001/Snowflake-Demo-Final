@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: stg_marketing__campaigns
+    description: "Silver layer marketing campaigns."
+    columns:
+      - name: CAMPAIGN_ID
+        data_tests:
+          - unique:
+              config: {severity: error}
+          - not_null:
+              config: {severity: error}
+      - name: TOTAL_SPEND
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+              config: {severity: error}
