@@ -1,0 +1,157 @@
+version: 2
+sources:
+  - name: bronze_erp
+    database: "{{ env_var('DBT_BRONZE_DB', 'BRONZE') }}"
+    schema: ERP
+    config:
+      loaded_at_field: _FIVETRAN_SYNCED
+      freshness:
+        warn_after: {count: 60, period: minute}
+        error_after: {count: 4, period: hour}
+    tables:
+      - name: OE_ORDER_HEADERS_ALL
+        description: "Master record for customer orders containing header-level information."
+        meta:
+          fivetran_connector: "myntra_clv_erp_connector"
+          load_type: "INCREMENTAL"
+          pii_columns: ["CUSTOMER_ID"]
+        columns:
+          - name: ORDER_ID
+            description: "Unique order identifier"
+          - name: ORDER_NUMBER
+            description: "Business order reference"
+          - name: CUSTOMER_ID
+            description: "Customer reference"
+          - name: ORDER_DATE
+            description: "Order placement date"
+          - name: ORDER_STATUS
+            description: "Order lifecycle status"
+          - name: TOTAL_AMOUNT
+            description: "Final order total"
+          - name: CURRENCY_CODE
+            description: "ISO currency code"
+          - name: CREATED_DATE
+            description: "Creation timestamp"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: OE_ORDER_LINES_ALL
+        description: "Individual line items within an order with product details."
+        meta:
+          fivetran_connector: "myntra_clv_erp_connector"
+          load_type: "INCREMENTAL"
+        columns:
+          - name: LINE_ID
+            description: "Unique line identifier"
+          - name: ORDER_ID
+            description: "Parent order"
+          - name: PRODUCT_ID
+            description: "Product reference"
+          - name: QUANTITY
+            description: "Units ordered"
+          - name: UNIT_PRICE
+            description: "Price per unit"
+          - name: LINE_AMOUNT
+            description: "Line total"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: ADDRESSES
+        description: "Customer shipping and billing addresses."
+        meta:
+          fivetran_connector: "myntra_clv_erp_connector"
+          load_type: "INCREMENTAL"
+          pii_columns: ["STREET_LINE_1", "PHONE"]
+        columns:
+          - name: ADDRESS_ID
+            description: "Unique address ID"
+          - name: CUSTOMER_ID
+            description: "Customer owner"
+          - name: CITY
+            description: "City"
+          - name: STATE
+            description: "State"
+          - name: PINCODE
+            description: "Postal code"
+          - name: COUNTRY
+            description: "Country"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: CITY_TIER_MASTER
+        description: "Reference table classifying cities into tiers."
+        config:
+          freshness: null
+        meta:
+          fivetran_connector: "myntra_clv_erp_connector"
+          load_type: "FULL"
+        columns:
+          - name: CITY
+            description: "City (composite PK)"
+          - name: STATE
+            description: "State (composite PK)"
+          - name: TIER
+            description: "City tier (1,2,3)"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: MTL_SYSTEM_ITEMS_B
+        description: "Master catalog of products."
+        meta:
+          fivetran_connector: "myntra_clv_erp_connector"
+          load_type: "INCREMENTAL"
+        columns:
+          - name: INVENTORY_ITEM_ID
+            description: "Unique product ID"
+          - name: ITEM_NAME
+            description: "Product name"
+          - name: CATEGORY_ID
+            description: "Category"
+          - name: BRAND_ID
+            description: "Brand"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: CATEGORIES
+        description: "Product Category hierarchy."
+        config:
+          freshness: null
+        meta:
+          fivetran_connector: "myntra_clv_erp_connector"
+          load_type: "FULL"
+        columns:
+          - name: CATEGORY_ID
+            description: "Unique category ID"
+          - name: CATEGORY_NAME
+            description: "Category name"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
+
+      - name: BRANDS
+        description: "Brand Master."
+        config:
+          freshness: null
+        meta:
+          fivetran_connector: "myntra_clv_erp_connector"
+          load_type: "FULL"
+        columns:
+          - name: BRAND_ID
+            description: "Unique brand ID"
+          - name: BRAND_NAME
+            description: "Brand name"
+          - name: _FIVETRAN_SYNCED
+            description: "Fivetran sync timestamp"
+          - name: _FIVETRAN_DELETED
+            description: "Fivetran soft delete flag"
